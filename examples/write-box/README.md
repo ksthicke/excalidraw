@@ -1,8 +1,10 @@
 # How to test write-box
 
 1. Make any modifications you want.
-2. Navigate to this folder with the terminal.
-3. Run `npm run start`.  Do NOT use ctrl+shift+L.
+2. Navigate to the base folder for excalidraw.
+3. Run `npm run rm:build` and then `npm run build:packages`.
+4. Navigate to this folder with the terminal.
+5. Run `npm run start`.  Do NOT use ctrl+shift+L.
 
 # How to build write-box
 
