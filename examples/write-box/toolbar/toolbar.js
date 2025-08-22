@@ -11,21 +11,98 @@ class ToolBar extends HTMLElement {
     }
     connectedCallback() {
         const shadowRoot = this.shadowRoot;
+
+        // Set up tools.
         const actions = ['hand', 'selection', 'lasso', 'rectangle', 'ellipse', 'arrow', 'line', 'freedraw', 'text', 'eraser', 'laser'];
-        const tools = shadowRoot.querySelectorAll('svg');
+        const tools = shadowRoot.querySelectorAll('#tools > svg');
         for (let i = 0; i < tools.length; i++) {
             tools[i].id = actions[i];
             tools[i].addEventListener('click', dispatchSetTool)
+        }
+
+        // Set up stroke colors.
+        const strokeColors = ['#000000', '#cc0000', '#00cc00', '#0077ff', '#ff8800'];
+        const strokeColorsContainer = shadowRoot.querySelector('#strokeColors');
+        for (let i = 0; i < strokeColors.length; i++) {
+            const newColorInner = document.createElement('div');
+            newColorInner.classList.add('color');
+            newColorInner.style.backgroundColor = strokeColors[i];
+            const newColorOuter = document.createElement('div');
+            newColorOuter.classList.add('colorOuter');
+            newColorOuter.setAttribute('data-color', strokeColors[i]);
+            newColorOuter.appendChild(newColorInner);
+            newColorOuter.addEventListener('click', dispatchChangeStrokeColor);
+            strokeColorsContainer.appendChild(newColorOuter);
+        }
+
+        // Set up background colors.
+        const backgroundColors = ['#000000', '#cc0000', '#00cc00', '#0077ff', '#ff8800', 'transparent'];
+        const backgroundColorsContainer = shadowRoot.querySelector('#backgroundColors');
+        for (let i = 0; i < backgroundColors.length; i++) {
+            const newColorInner = document.createElement('div');
+            newColorInner.classList.add('color');
+            if (backgroundColors[i] != 'transparent') {
+                newColorInner.style.backgroundColor = backgroundColors[i];
+            } else {
+                newColorInner.style.background = 'repeating-conic-gradient(#00000000 0% 25%, #999999ff 0% 50%) 50% / 51% 51%';
+            }
+            const newColorOuter = document.createElement('div');
+            newColorOuter.classList.add('colorOuter');
+            newColorOuter.setAttribute('data-color', backgroundColors[i]);
+            newColorOuter.appendChild(newColorInner);
+            newColorOuter.addEventListener('click', dispatchChangeBackgroundColor);
+            backgroundColorsContainer.appendChild(newColorOuter);
         }
     }
 }
 
 function dispatchSetTool(event) {
+    const shadowRoot = document.querySelector('tool-bar').shadowRoot;
     const toolName = this.id;
+
+    // Set which tool is checked.
+    const tools = shadowRoot.querySelectorAll('#tools > svg');
+    tools.forEach((tool, idx, arr) => {tool.classList.remove('checked')});
+    shadowRoot.querySelector(`#tools > #${toolName}`).classList.add('checked');
+
+    // Set the tool in each write-box.
     const writeBoxes = document.querySelectorAll('write-box');
-    console.log(writeBoxes)
     for (let box of writeBoxes) {
         box.dispatchEvent(new CustomEvent('setTool', { detail: toolName }));
+    }
+}
+
+function dispatchChangeStrokeColor(event) {
+    const shadowRoot = document.querySelector('tool-bar').shadowRoot;
+    const color =  this.getAttribute("data-color");
+
+    // Set which stroke color is checked.
+    const colorEls = shadowRoot.querySelectorAll('#strokeColors > div');
+    console.log('colorEls', colorEls)
+    console.log(color)
+    colorEls.forEach((el, idx, arr) => {el.classList.remove('checked')});
+    shadowRoot.querySelector(`#strokeColors > div[data-color="${color}"]`).classList.add('checked');
+
+    // Set the stroke color in each write-box.
+    const writeBoxes = document.querySelectorAll('write-box');
+    for (let box of writeBoxes) {
+        box.dispatchEvent(new CustomEvent('changeStrokeColor', { detail: color }));
+    }
+}
+
+function dispatchChangeBackgroundColor(event) {
+    const shadowRoot = document.querySelector('tool-bar').shadowRoot;
+    const color =  this.getAttribute("data-color");
+
+    // Set which stroke color is checked.
+    const colorEls = shadowRoot.querySelectorAll('#backgroundColors > div');
+    colorEls.forEach((el, idx, arr) => {el.classList.remove('checked')});
+    shadowRoot.querySelector(`#backgroundColors > div[data-color="${color}"]`).classList.add('checked');
+
+    // Set the stroke color in each write-box.
+    const writeBoxes = document.querySelectorAll('write-box');
+    for (let box of writeBoxes) {
+        box.dispatchEvent(new CustomEvent('changeBackgroundColor', { detail: color }));
     }
 }
 
@@ -37,7 +114,19 @@ const html = `
             --icon-size: 1.2em;
             --margin-around-icons: 0.2em;
         }
-        div#toolbox > svg {
+        div#tools {
+            display: flex;
+        }
+        div#colorsContainer {
+            display: flex;
+        }
+        div#strokeColors {
+            display: flex;
+        }
+        div#backgroundColors {
+            display: flex;
+        }
+        div#tools > svg {
             width: var(--icon-size);
             height: var(--icon-size);
             vertical-align: -0.125em;
@@ -45,11 +134,20 @@ const html = `
             margin: var(--margin-around-icons) calc(var(--margin-around-icons)*0.5);
             border-radius: 0.2em;
         }
-        div#toolbox > svg:hover {
+        div#tools > svg:hover {
             background-color: #EAEAEA;
             cursor: pointer;
         }
-        div#toolbox {
+        div#tools > svg.checked {
+            background-color: #DDDDDD;
+        }
+        div#strokeColors > .checked {
+            background-color: #DDDDDD;
+        }
+        div#backgroundColors > .checked {
+            background-color: #DDDDDD;
+        }
+        div#toolbar {
             background-color: white;
             border: 1px solid gray;
             border-radius: 0.2em;
@@ -58,6 +156,25 @@ const html = `
             position: fixed;
             z-index: 2000;
         }
+        div.color {
+            width: var(--icon-size);
+            height: var(--icon-size);
+            border-radius: 0.2em;
+        }
+        div.colorOuter {
+            padding: 0.4em;
+            margin: var(--margin-around-icons) calc(var(--margin-around-icons)*0.5);
+            border-radius: 0.2em;
+        }
+        div.colorOuter:hover {
+            background-color: #EAEAEA;
+            cursor: pointer;
+        }
+        #colorDivider {
+            background-color: #999999;
+            width: 1px;
+            margin: 0.4em 0.4em;
+        }
         div.toolBoxCenter {
             flex-direction: column;
             left: 50%;
@@ -65,24 +182,31 @@ const html = `
             transform: translate(-50%, -50%);
         }
         div.toolBoxTop {
-            flex-direction: row;
+            flex-direction: column;
             left: 75%;
             top: 5px;
             transform: translate(-50%, 0%);
         }
     </style>
-    <div id="toolbox" class="toolBoxTop">
-        ${icon.iconHand}
-        ${icon.iconHandPoint}
-        ${icon.iconDottedRectangle}
-        ${icon.iconSquare}
-        ${icon.iconCircle}
-        ${icon.iconRightArrow}
-        ${icon.iconLine}
-        ${icon.iconPencil}
-        ${icon.iconLetterA}
-        ${icon.iconEraser}
-        ${icon.iconCrossHair}
+    <div id="toolbar" class="toolBoxTop">
+        <div id="tools">
+            ${icon.iconHand}
+            ${icon.iconHandPoint}
+            ${icon.iconDottedRectangle}
+            ${icon.iconSquare}
+            ${icon.iconCircle}
+            ${icon.iconRightArrow}
+            ${icon.iconLine}
+            ${icon.iconPencil}
+            ${icon.iconLetterA}
+            ${icon.iconEraser}
+            ${icon.iconCrossHair}
+        </div>
+        <div id="colorsContainer">
+            <div id="strokeColors"></div>
+            <div id="colorDivider"></div>
+            <div id="backgroundColors"></div>
+        </div>
     </div>
 </template>`;
 

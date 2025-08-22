@@ -30,7 +30,7 @@ class WriteBox extends HTMLElement {
         if (!height) {
             height = '600px';
         }
-        root.render(<div style={{ height: height }}><ExcalidrawWrapper /></div>);
+        root.render(<div id="container" style={{ height: height }}><ExcalidrawWrapper /></div>);
     }
     attributeChangedCallback(name, oldValue, newValue) {
         
@@ -41,13 +41,46 @@ function ExcalidrawWrapper() {
     const setTool = (event) => {
         console.log('setTool', event)
         excalidrawAPI.setActiveTool({ type: event.detail, locked: true });
-    }
+    };
+
+    const changeStrokeColor = (event) => {
+        excalidrawAPI.updateScene( {
+            appState: {
+                currentItemStrokeColor: event.detail,
+            }
+        });
+    };
+
+    const changeBackgroundColor = (event) => {
+        excalidrawAPI.updateScene( {
+            appState: {
+                currentItemBackgroundColor: event.detail,
+            }
+        });
+    };
+
+    // Set up the excalidrawAPI.
     const [excalidrawAPI, setExcalidrawAPI] = useState(null);
+
+    // Set up the event listeners.
     React.useEffect(() => {
-        console.log('setting event listener')
         thisElement.addEventListener("setTool", setTool);
         return () => {
             thisElement.removeEventListener("setTool", setTool);
+        }
+    }, [excalidrawAPI]);
+
+    React.useEffect(() => {
+        thisElement.addEventListener("changeStrokeColor", changeStrokeColor);
+        return () => {
+            thisElement.removeEventListener("changeStrokeColor", changeStrokeColor);
+        }
+    }, [excalidrawAPI]);
+
+    React.useEffect(() => {
+        thisElement.addEventListener("changeBackgroundColor", changeBackgroundColor);
+        return () => {
+            thisElement.removeEventListener("changeBackgroundColor", changeBackgroundColor);
         }
     }, [excalidrawAPI]);
 
