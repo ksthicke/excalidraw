@@ -97,10 +97,30 @@ function ExcalidrawWrapper() {
     };
 
     const changeBackgroundColor = (event) => {
-        excalidrawAPI.updateScene( {
+        const color = event.detail;
+
+        // Get the selected elements.
+        const selectedIds = Object.keys(excalidrawAPI.getAppState().selectedElementIds);
+        const selectedEls = excalidrawAPI.getSceneElementsIncludingDeleted().filter((el) => selectedIds.indexOf(el.id) != -1);
+        const nonSelectedEls = excalidrawAPI.getSceneElementsIncludingDeleted().filter((el) => selectedIds.indexOf(el.id) == -1);
+        
+        // Change the colors of the selected elements.
+        // (I'm not sure why both steps seem to be needed, but if I do it this way, it works.)
+        const newEls = new Array(selectedEls.length);
+        for (let i = 0; i < selectedEls.length; i++) {
+            newEls[i] = { ...selectedEls[i] }; // creates a copy of the object
+        }
+        for (let el of newEls) {
+            excalidrawAPI.mutateElement(el, { backgroundColor: color });
+        }
+
+        // Update the current stroke color.
+        excalidrawAPI.updateScene({
+            elements: [...nonSelectedEls, ...newEls],
             appState: {
-                currentItemBackgroundColor: event.detail,
-            }
+                currentItemBackgroundColor: color,
+            },
+            captureUpdate: 'IMMEDIATELY'
         });
     };
 
