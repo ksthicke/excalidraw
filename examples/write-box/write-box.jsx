@@ -51,7 +51,7 @@ function ExcalidrawWrapper() {
                 opacity = 100;
                 break;
             case 'highlighter':
-                strokeWidth = 5;
+                strokeWidth = 6;
                 opacity = 40;
                 tool = 'freedraw';
                 break;
