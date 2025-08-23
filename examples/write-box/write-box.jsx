@@ -70,9 +70,6 @@ function ExcalidrawWrapper() {
 
     const changeStrokeColor = (event) => {
         const color = event.detail;
-        console.log('app state', excalidrawAPI.getAppState())
-        console.log('elements', excalidrawAPI.getSceneElements())
-        console.log('elements inc del', excalidrawAPI.getSceneElementsIncludingDeleted())
 
         // Get the selected elements.
         const selectedIds = Object.keys(excalidrawAPI.getAppState().selectedElementIds);
