@@ -60,7 +60,7 @@ function dispatchSetTool(event) {
     const shadowRoot = document.querySelector('tool-bar').shadowRoot;
     const toolName = this.id;
 
-    // Set which tool is checked.
+    // Set which tool is selected.
     const tools = shadowRoot.querySelectorAll('#tools > svg');
     tools.forEach((tool, idx, arr) => {tool.classList.remove('checked')});
     shadowRoot.querySelector(`#tools > #${toolName}`).classList.add('checked');
@@ -76,7 +76,7 @@ function dispatchChangeStrokeColor(event) {
     const shadowRoot = document.querySelector('tool-bar').shadowRoot;
     const color =  this.getAttribute("data-color");
 
-    // Set which stroke color is checked.
+    // Set which stroke color is selected.
     const colorEls = shadowRoot.querySelectorAll('#strokeColors > div');
     console.log('colorEls', colorEls)
     console.log(color)
@@ -94,7 +94,7 @@ function dispatchChangeBackgroundColor(event) {
     const shadowRoot = document.querySelector('tool-bar').shadowRoot;
     const color =  this.getAttribute("data-color");
 
-    // Set which stroke color is checked.
+    // Set which stroke color is selected.
     const colorEls = shadowRoot.querySelectorAll('#backgroundColors > div');
     colorEls.forEach((el, idx, arr) => {el.classList.remove('checked')});
     shadowRoot.querySelector(`#backgroundColors > div[data-color="${color}"]`).classList.add('checked');
