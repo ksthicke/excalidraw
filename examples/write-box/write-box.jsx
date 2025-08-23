@@ -37,13 +37,41 @@ class WriteBox extends HTMLElement {
     }
 }
 
+/* This wrapper allows us to use the excalidrawAPI.  The api can only be accessed
+ * from inside this function, so any external code that wishes to affect the api
+ * must call something in here via an event. */
 function ExcalidrawWrapper() {
     const setTool = (event) => {
         console.log('setTool', event)
-        excalidrawAPI.setActiveTool({ type: event.detail, locked: true });
+        let tool = event.detail;
+        let strokeWidth, opacity;
+        switch (tool) {
+            case 'freedraw':
+                strokeWidth = 0.5;
+                opacity = 100;
+                break;
+            case 'highlighter':
+                strokeWidth = 5;
+                opacity = 40;
+                tool = 'freedraw';
+                break;
+            default:
+                strokeWidth = 2;
+                opacity = 100;
+        }
+        excalidrawAPI.updateScene({
+            appState: {
+                currentItemStrokeWidth: strokeWidth,
+                currentItemOpacity: opacity,
+            }
+        });
+        excalidrawAPI.setActiveTool({ type: tool, locked: true });
     };
 
     const changeStrokeColor = (event) => {
+        console.log('app state', excalidrawAPI.getAppState())
+        console.log('elements', excalidrawAPI.getSceneElements())
+        console.log('elements inc del', excalidrawAPI.getSceneElementsIncludingDeleted())
         excalidrawAPI.updateScene( {
             appState: {
                 currentItemStrokeColor: event.detail,

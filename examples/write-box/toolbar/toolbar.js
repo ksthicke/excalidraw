@@ -13,7 +13,7 @@ class ToolBar extends HTMLElement {
         const shadowRoot = this.shadowRoot;
 
         // Set up tools.
-        const actions = ['hand', 'selection', 'lasso', 'rectangle', 'ellipse', 'arrow', 'line', 'freedraw', 'text', 'eraser', 'laser'];
+        const actions = ['hand', 'selection', 'lasso', 'rectangle', 'ellipse', 'arrow', 'line', 'freedraw', 'highlighter', 'text', 'eraser', 'laser'];
         const tools = shadowRoot.querySelectorAll('#tools > svg');
         for (let i = 0; i < tools.length; i++) {
             tools[i].id = actions[i];
@@ -21,7 +21,7 @@ class ToolBar extends HTMLElement {
         }
 
         // Set up stroke colors.
-        const strokeColors = ['#000000', '#cc0000', '#00cc00', '#0077ff', '#ff8800'];
+        const strokeColors = ['#000000', '#cc0000', '#00cc00', '#0077ff', '#ff8800', '#ffff00'];
         const strokeColorsContainer = shadowRoot.querySelector('#strokeColors');
         for (let i = 0; i < strokeColors.length; i++) {
             const newColorInner = document.createElement('div');
@@ -198,6 +198,7 @@ const html = `
             ${icon.iconRightArrow}
             ${icon.iconLine}
             ${icon.iconPencil}
+            ${icon.iconMarker}
             ${icon.iconLetterA}
             ${icon.iconEraser}
             ${icon.iconCrossHair}
