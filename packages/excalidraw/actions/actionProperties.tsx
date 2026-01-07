@@ -337,7 +337,7 @@ export const actionChangeStrokeColor = register({
           (hasSelection) =>
             !hasSelection ? appState.currentItemStrokeColor : null,
         )}
-        onChange={(color) => updateData({ currentItemStrokeColor: color })}
+        onChange={(color) => {console.log(`updateData( {currentItemStrokeColor: ${color} } )`); updateData({ currentItemStrokeColor: color })}}
         elements={elements}
         appState={appState}
         updateData={updateData}

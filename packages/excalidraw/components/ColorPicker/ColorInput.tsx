@@ -48,6 +48,7 @@ export const ColorInput = ({
         onChange(color);
       }
       setInnerValue(value);
+      console.log(`ColorInput: setInnerValue(${value})`)
     },
     [onChange],
   );
