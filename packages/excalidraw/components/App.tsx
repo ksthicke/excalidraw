@@ -1580,7 +1580,8 @@ class App extends React.Component<AppProps, AppState> {
                       <ExcalidrawActionManagerContext.Provider
                         value={this.actionManager}
                       >
-                        <LayerUI
+                        { /* Comment out this part to get rid of all the UI elements. */
+                          /*<LayerUI
                           canvas={this.canvas}
                           appState={this.state}
                           files={this.files}
@@ -1613,7 +1614,7 @@ class App extends React.Component<AppProps, AppState> {
                           }
                         >
                           {this.props.children}
-                        </LayerUI>
+                        </LayerUI> */}
 
                         <div className="excalidraw-textEditorContainer" />
                         <div className="excalidraw-contextMenuContainer" />
