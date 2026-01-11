@@ -17,8 +17,28 @@ class ToolBar extends HTMLElement {
         const tools = shadowRoot.querySelectorAll('#tools > svg');
         for (let i = 0; i < tools.length; i++) {
             tools[i].id = actions[i];
-            tools[i].addEventListener('click', dispatchSetTool)
+            tools[i].addEventListener('click', dispatchSetTool);
         }
+
+        // Set up save and load.
+        const parser = new DOMParser();
+        const saveIconHtml = parser.parseFromString(icon.iconSave, "text/html");
+        const loadIconHtml = parser.parseFromString(icon.iconFolder, "text/html");
+        const toolbar = shadowRoot.querySelector('#tools');
+        toolbar.appendChild(saveIconHtml.body.children[0]);
+        const saveIcon = shadowRoot.querySelector('#tools > svg:last-child');
+        toolbar.appendChild(loadIconHtml.body.children[0]);
+        const loadIcon = shadowRoot.querySelector('#tools > svg:last-child');
+        saveIcon.addEventListener('click', dispatchSave);
+        loadIcon.addEventListener('click', dispatchLoad);
+
+        // Set up confirmation before leaving page.
+        window.addEventListener('beforeunload', function(e){
+            // Check if anything has been updated since last save.
+
+            // If changed since last save, then warn before leaving page.
+            //e.preventDefault(); // asks user if they are sure they want to leave
+        });
 
         // Set up stroke colors.
         const strokeColors = ['#000000', '#cc0000', '#00cc00', '#0077ff', '#ff8800', '#ffff00'];
@@ -69,6 +89,61 @@ function dispatchSetTool(event) {
     const writeBoxes = document.querySelectorAll('write-box');
     for (let box of writeBoxes) {
         box.dispatchEvent(new CustomEvent('setTool', { detail: toolName }));
+    }
+}
+
+function dispatchSave(event) {
+    const writeBoxes = document.querySelectorAll('write-box');
+
+    // Set up the save function for the write-boxes to call.
+    window.removeEventListener('saveToFile', saveToFile);
+    window.writeBoxes = new Array(writeBoxes.length);
+    window.writeBoxesUpdated = new Array(writeBoxes.length).fill(false);
+    window.addEventListener('saveToFile', saveToFile);
+
+    // Dispatch to each write-box.
+    for (let i = 0; i < writeBoxes.length; i++) {
+        writeBoxes[i].dispatchEvent(new CustomEvent('saveBox', { detail: i }));
+    }
+}
+
+function saveToFile(event) {
+    // Update with the new data.
+    const obj = event.detail;
+    window.writeBoxes[obj.idx] = obj.sceneData;
+    window.writeBoxesUpdated[obj.idx] = true;
+
+    // If all write-boxes have returned their data, then save to file.
+    if (window.writeBoxesUpdated.every(el => el === true)) {
+        const textToSave = JSON.stringify({ writeboxes: window.writeBoxes });
+        const downloadElement = document.createElement('a');
+        downloadElement.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(textToSave));
+        downloadElement.setAttribute('download', 'notes ' + dateAndTime() + '.json');
+        downloadElement.style.display = 'none';
+        document.body.appendChild(downloadElement);
+        downloadElement.click();
+        document.body.removeChild(downloadElement);
+    }
+
+    function dateAndTime() {
+        const twoDigits = (num) => {
+            let s = String(num);
+            if (s.length == 1) {
+                s = '0' + s;
+            }
+            return s;
+        }
+        const date = new Date();
+        return date.getFullYear() + '-' + twoDigits(date.getMonth()+1) + '-' + twoDigits(date.getDate()) + ' ' + twoDigits(date.getHours()) + '.' + twoDigits(date.getMinutes());
+    }
+}
+
+function dispatchLoad(event) {
+    console.log('LOADING...')
+    // Load into each write-box.
+    const writeBoxes = document.querySelectorAll('write-box');
+    for (let i = 0; i < writeBoxes.length; i++) {
+        writeBoxes[i].dispatchEvent(new CustomEvent('loadBox'));
     }
 }
 

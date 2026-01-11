@@ -3,14 +3,11 @@ import React, { useState } from 'react';
 import { Excalidraw } from "@excalidraw/excalidraw";
 import "@excalidraw/excalidraw/index.css";
 
-let thisElement;
-
 // Define class.
 class WriteBox extends HTMLElement {
     static observedAttributes = ['title', 'prefix'];
     constructor() {
         super();
-        thisElement = this;
         /* Use this when I convert to using the shadowDOM.
         const shadowRoot = this.attachShadow({ mode: 'open' });
         let styleSheet = document.createElement('link');
@@ -30,127 +27,157 @@ class WriteBox extends HTMLElement {
         if (!height) {
             height = '600px';
         }
-        root.render(<div id="container" style={{ height: height }}><ExcalidrawWrapper /></div>);
+        root.render(<div id="container" style={{ height: height }}><this.ExcalidrawWrapper /></div>);
     }
     attributeChangedCallback(name, oldValue, newValue) {
         
     }
-}
 
-/* This wrapper allows us to use the excalidrawAPI.  The api can only be accessed
- * from inside this function, so any external code that wishes to affect the api
- * must call something in here via an event. */
-function ExcalidrawWrapper() {
-    const setTool = (event) => {
-        console.log('setTool', event)
-        let tool = event.detail;
-        let strokeWidth, opacity;
-        switch (tool) {
-            case 'freedraw':
-                strokeWidth = 0.5;
-                opacity = 100;
-                break;
-            case 'highlighter':
-                strokeWidth = 6;
-                opacity = 40;
-                tool = 'freedraw';
-                break;
-            default:
-                strokeWidth = 2;
-                opacity = 100;
-        }
-        excalidrawAPI.updateScene({
-            appState: {
-                currentItemStrokeWidth: strokeWidth,
-                currentItemOpacity: opacity,
+    /* This wrapper allows us to use the excalidrawAPI.  The api can only be accessed
+    * from inside this function, so any external code that wishes to affect the api
+    * must call something in here via an event. */
+    ExcalidrawWrapper = () => {
+        const setTool = (event) => {
+            console.log('setTool', event)
+            let tool = event.detail;
+            let strokeWidth, opacity;
+            switch (tool) {
+                case 'freedraw':
+                    strokeWidth = 0.5;
+                    opacity = 100;
+                    break;
+                case 'highlighter':
+                    strokeWidth = 6;
+                    opacity = 40;
+                    tool = 'freedraw';
+                    break;
+                default:
+                    strokeWidth = 2;
+                    opacity = 100;
             }
-        });
-        excalidrawAPI.setActiveTool({ type: tool, locked: true });
-    };
+            excalidrawAPI.updateScene({
+                appState: {
+                    currentItemStrokeWidth: strokeWidth,
+                    currentItemOpacity: opacity,
+                }
+            });
+            excalidrawAPI.setActiveTool({ type: tool, locked: true });
+        };
 
-    const changeStrokeColor = (event) => {
-        const color = event.detail;
+        const saveBox = (event) => {
+            const idx = event.detail;
+            const appState = excalidrawAPI.getAppState();
+            const appStateLessInfo = {
+                "gridSize": appState.gridSize,
+                "gridStep": appState.gridStep,
+                "gridModeEnabled": appState.gridModeEnabled,
+                "viewBackgroundColor": appState.viewBackgroundColor,
+            }
+            const elements = excalidrawAPI.getSceneElements();
+            const sceneData = {"appState": appStateLessInfo, "elements": elements};
+            const toReturn = { detail: {idx: idx, sceneData: sceneData} };
+            window.dispatchEvent(new CustomEvent('saveToFile', { detail: {idx: idx, sceneData: sceneData} }));
+        };
 
-        // Get the selected elements.
-        const selectedIds = Object.keys(excalidrawAPI.getAppState().selectedElementIds);
-        const selectedEls = excalidrawAPI.getSceneElementsIncludingDeleted().filter((el) => selectedIds.indexOf(el.id) != -1);
-        const nonSelectedEls = excalidrawAPI.getSceneElementsIncludingDeleted().filter((el) => selectedIds.indexOf(el.id) == -1);
-        
-        // Change the colors of the selected elements.
-        // (I'm not sure why both steps seem to be needed, but if I do it this way, it works.)
-        const newEls = new Array(selectedEls.length);
-        for (let i = 0; i < selectedEls.length; i++) {
-            newEls[i] = { ...selectedEls[i] }; // creates a copy of the object
-        }
-        for (let el of newEls) {
-            excalidrawAPI.mutateElement(el, { strokeColor: color });
-        }
+        const loadBox = (event) => {
+            const sceneData = event.detail; //JSON.parse(`{"appState":{"gridSize":20,"gridStep":5,"gridModeEnabled":false,"viewBackgroundColor":"#ffffff"},"elements":[{"id":"oDXXWgG_8_oQXOEJd1Tsx","type":"freedraw","x":847.5999755859375,"y":21.599998474121094,"width":0.0001,"height":0.0001,"angle":0,"strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":0.5,"strokeStyle":"solid","roughness":1,"opacity":100,"groupIds":[],"frameId":null,"index":"a1","roundness":null,"seed":826168360,"version":3,"versionNonce":122705752,"isDeleted":false,"boundElements":null,"updated":1767817458269,"link":null,"locked":false,"points":[[0,0],[0.0001,0.0001]],"pressures":[],"simulatePressure":true,"lastCommittedPoint":[0.0001,0.0001]},{"id":"7p2uFicmjbaU2uqqRaGzF","type":"freedraw","x":1346.4000244140625,"y":251.81773681640624,"width":0.0001,"height":0.0001,"angle":0,"strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":0.5,"strokeStyle":"solid","roughness":1,"opacity":100,"groupIds":[],"frameId":null,"index":"a2","roundness":null,"seed":1393456728,"version":3,"versionNonce":772478504,"isDeleted":false,"boundElements":null,"updated":1767818245119,"link":null,"locked":false,"points":[[0,0],[0.0001,0.0001]],"pressures":[],"simulatePressure":true,"lastCommittedPoint":[0.0001,0.0001]},{"id":"uPIZkIjeECV3Ysnog1Xti","type":"freedraw","x":1243.5999755859375,"y":127.41772766113282,"width":0.0001,"height":0.0001,"angle":0,"strokeColor":"#ff8800","backgroundColor":"#00cc00","fillStyle":"solid","strokeWidth":6,"strokeStyle":"solid","roughness":1,"opacity":40,"groupIds":[],"frameId":null,"index":"a5","roundness":null,"seed":1408542504,"version":3,"versionNonce":277419096,"isDeleted":false,"boundElements":null,"updated":1767818497971,"link":null,"locked":false,"points":[[0,0],[0.0001,0.0001]],"pressures":[],"simulatePressure":true,"lastCommittedPoint":[0.0001,0.0001]},{"id":"GZvS1YzSgeySdwR2Ar4e0","type":"ellipse","x":740.7999877929688,"y":102.2177230834961,"width":171.60003662109375,"height":86.00000762939452,"angle":0,"strokeColor":"#ff8800","backgroundColor":"#00cc00","fillStyle":"solid","strokeWidth":2,"strokeStyle":"solid","roughness":1,"opacity":100,"groupIds":[],"frameId":null,"index":"a6","roundness":{"type":2},"seed":1611671640,"version":12,"versionNonce":1650198104,"isDeleted":false,"boundElements":null,"updated":1767818511676,"link":null,"locked":false}]}`);
+            sceneData.captureUpdate = 'IMMEDIATELY';
+            excalidrawAPI.updateScene(sceneData);
+        };
 
-        // Update the current stroke color.
-        excalidrawAPI.updateScene({
-            elements: [...nonSelectedEls, ...newEls],
-            appState: {
-                currentItemStrokeColor: color,
-            },
-            captureUpdate: 'IMMEDIATELY'
-        });
-    };
+        const changeStrokeColor = (event) => {
+            const color = event.detail;
 
-    const changeBackgroundColor = (event) => {
-        const color = event.detail;
+            // Get the selected elements.
+            const selectedIds = Object.keys(excalidrawAPI.getAppState().selectedElementIds);
+            const selectedEls = excalidrawAPI.getSceneElementsIncludingDeleted().filter((el) => selectedIds.indexOf(el.id) != -1);
+            const nonSelectedEls = excalidrawAPI.getSceneElementsIncludingDeleted().filter((el) => selectedIds.indexOf(el.id) == -1);
+            
+            // Change the colors of the selected elements.
+            // (I'm not sure why both steps seem to be needed, but if I do it this way, it works.)
+            const newEls = new Array(selectedEls.length);
+            for (let i = 0; i < selectedEls.length; i++) {
+                newEls[i] = { ...selectedEls[i] }; // creates a copy of the object
+            }
+            for (let el of newEls) {
+                excalidrawAPI.mutateElement(el, { strokeColor: color });
+            }
 
-        // Get the selected elements.
-        const selectedIds = Object.keys(excalidrawAPI.getAppState().selectedElementIds);
-        const selectedEls = excalidrawAPI.getSceneElementsIncludingDeleted().filter((el) => selectedIds.indexOf(el.id) != -1);
-        const nonSelectedEls = excalidrawAPI.getSceneElementsIncludingDeleted().filter((el) => selectedIds.indexOf(el.id) == -1);
-        
-        // Change the colors of the selected elements.
-        // (I'm not sure why both steps seem to be needed, but if I do it this way, it works.)
-        const newEls = new Array(selectedEls.length);
-        for (let i = 0; i < selectedEls.length; i++) {
-            newEls[i] = { ...selectedEls[i] }; // creates a copy of the object
-        }
-        for (let el of newEls) {
-            excalidrawAPI.mutateElement(el, { backgroundColor: color });
-        }
+            // Update the current stroke color.
+            excalidrawAPI.updateScene({
+                elements: [...nonSelectedEls, ...newEls],
+                appState: {
+                    currentItemStrokeColor: color,
+                },
+                captureUpdate: 'IMMEDIATELY'
+            });
+        };
 
-        // Update the current stroke color.
-        excalidrawAPI.updateScene({
-            elements: [...nonSelectedEls, ...newEls],
-            appState: {
-                currentItemBackgroundColor: color,
-            },
-            captureUpdate: 'IMMEDIATELY'
-        });
-    };
+        const changeBackgroundColor = (event) => {
+            const color = event.detail;
 
-    // Set up the excalidrawAPI.
-    const [excalidrawAPI, setExcalidrawAPI] = useState(null);
+            // Get the selected elements.
+            const selectedIds = Object.keys(excalidrawAPI.getAppState().selectedElementIds);
+            const selectedEls = excalidrawAPI.getSceneElementsIncludingDeleted().filter((el) => selectedIds.indexOf(el.id) != -1);
+            const nonSelectedEls = excalidrawAPI.getSceneElementsIncludingDeleted().filter((el) => selectedIds.indexOf(el.id) == -1);
+            
+            // Change the colors of the selected elements.
+            // (I'm not sure why both steps seem to be needed, but if I do it this way, it works.)
+            const newEls = new Array(selectedEls.length);
+            for (let i = 0; i < selectedEls.length; i++) {
+                newEls[i] = { ...selectedEls[i] }; // creates a copy of the object
+            }
+            for (let el of newEls) {
+                excalidrawAPI.mutateElement(el, { backgroundColor: color });
+            }
 
-    // Set up the event listeners.
-    React.useEffect(() => {
-        thisElement.addEventListener("setTool", setTool);
-        return () => {
-            thisElement.removeEventListener("setTool", setTool);
-        }
-    }, [excalidrawAPI]);
+            // Update the current stroke color.
+            excalidrawAPI.updateScene({
+                elements: [...nonSelectedEls, ...newEls],
+                appState: {
+                    currentItemBackgroundColor: color,
+                },
+                captureUpdate: 'IMMEDIATELY'
+            });
+        };
 
-    React.useEffect(() => {
-        thisElement.addEventListener("changeStrokeColor", changeStrokeColor);
-        return () => {
-            thisElement.removeEventListener("changeStrokeColor", changeStrokeColor);
-        }
-    }, [excalidrawAPI]);
+        // Set up the excalidrawAPI.
+        const [excalidrawAPI, setExcalidrawAPI] = useState(null);
 
-    React.useEffect(() => {
-        thisElement.addEventListener("changeBackgroundColor", changeBackgroundColor);
-        return () => {
-            thisElement.removeEventListener("changeBackgroundColor", changeBackgroundColor);
-        }
-    }, [excalidrawAPI]);
+        // Set up the event listeners.
+        React.useEffect(() => {
+            this.addEventListener("setTool", setTool);
+            return () => {
+                this.removeEventListener("setTool", setTool);
+            }
+        }, [excalidrawAPI]);
 
-    return <Excalidraw excalidrawAPI={(api) => setExcalidrawAPI(api)} />
+        React.useEffect(() => {
+            this.addEventListener("saveBox", saveBox);
+            return () => {
+                this.removeEventListener("saveBox", saveBox);
+            }
+        }, [excalidrawAPI]);
+
+        React.useEffect(() => {
+            this.addEventListener("changeStrokeColor", changeStrokeColor);
+            return () => {
+                this.removeEventListener("changeStrokeColor", changeStrokeColor);
+            }
+        }, [excalidrawAPI]);
+
+        React.useEffect(() => {
+            this.addEventListener("changeBackgroundColor", changeBackgroundColor);
+            return () => {
+                this.removeEventListener("changeBackgroundColor", changeBackgroundColor);
+            }
+        }, [excalidrawAPI]);
+
+        return <Excalidraw excalidrawAPI={(api) => setExcalidrawAPI(api)} />
+    }
 }
+
+
 
 // Add element to the list of customElements.
 customElements.define('write-box', WriteBox);
