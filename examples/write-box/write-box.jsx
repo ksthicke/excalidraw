@@ -38,7 +38,6 @@ class WriteBox extends HTMLElement {
     * must call something in here via an event. */
     ExcalidrawWrapper = () => {
         const setTool = (event) => {
-            console.log('setTool', event)
             let tool = event.detail;
             let strokeWidth, opacity;
             switch (tool) {
@@ -156,6 +155,13 @@ class WriteBox extends HTMLElement {
             this.addEventListener("saveBox", saveBox);
             return () => {
                 this.removeEventListener("saveBox", saveBox);
+            }
+        }, [excalidrawAPI]);
+
+        React.useEffect(() => {
+            this.addEventListener("loadBox", loadBox);
+            return () => {
+                this.removeEventListener("loadBox", loadBox);
             }
         }, [excalidrawAPI]);
 

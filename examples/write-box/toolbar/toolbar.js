@@ -30,7 +30,7 @@ class ToolBar extends HTMLElement {
         toolbar.appendChild(loadIconHtml.body.children[0]);
         const loadIcon = shadowRoot.querySelector('#tools > svg:last-child');
         saveIcon.addEventListener('click', dispatchSave);
-        loadIcon.addEventListener('click', dispatchLoad);
+        loadIcon.addEventListener('click', loadFile);
 
         // Set up confirmation before leaving page.
         window.addEventListener('beforeunload', function(e){
@@ -120,9 +120,9 @@ function saveToFile(event) {
         downloadElement.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(textToSave));
         downloadElement.setAttribute('download', 'notes ' + dateAndTime() + '.json');
         downloadElement.style.display = 'none';
-        document.body.appendChild(downloadElement);
+        //document.body.appendChild(downloadElement);
         downloadElement.click();
-        document.body.removeChild(downloadElement);
+        //document.body.removeChild(downloadElement);
     }
 
     function dateAndTime() {
@@ -138,12 +138,39 @@ function saveToFile(event) {
     }
 }
 
+function loadFile(event) {
+    const inputNode = document.createElement('input');
+    inputNode.setAttribute('type', 'file');
+    inputNode.style.display = 'none';
+    inputNode.addEventListener('change', onFileChosen)
+    //document.body.appendChild(inputNode);
+    inputNode.click();
+    //document.body.removeChild(inputNode);
+}
+
+function onFileChosen(event) {
+    const reader = new FileReader();
+    reader.onload = dispatchLoad;
+    reader.readAsText(event.target.files[0]);
+}
+
 function dispatchLoad(event) {
-    console.log('LOADING...')
-    // Load into each write-box.
-    const writeBoxes = document.querySelectorAll('write-box');
-    for (let i = 0; i < writeBoxes.length; i++) {
-        writeBoxes[i].dispatchEvent(new CustomEvent('loadBox'));
+    const obj = JSON.parse(event.target.result);
+    if (Object.hasOwn(obj, 'writeboxes')) {
+        // Load into each write-box.
+        const writeBoxes = document.querySelectorAll('write-box');
+        const savedScenes = obj.writeboxes;
+        if (savedScenes.length > writeBoxes.length) {
+            alert('Load failed. There are more saved boxes in this file than there are boxes in these notes. You probably tried to open the notes for a different chapter.')
+        }
+        else {
+            for (let i = 0; i < savedScenes.length; i++) {
+                writeBoxes[i].dispatchEvent(new CustomEvent('loadBox', { detail: savedScenes[i] }));
+            }
+        }
+    }
+    else {
+        alert('The selected file does not appear to be saved notes.')
     }
 }
 
@@ -153,8 +180,6 @@ function dispatchChangeStrokeColor(event) {
 
     // Set which stroke color is selected.
     const colorEls = shadowRoot.querySelectorAll('#strokeColors > div');
-    console.log('colorEls', colorEls)
-    console.log(color)
     colorEls.forEach((el, idx, arr) => {el.classList.remove('checked')});
     shadowRoot.querySelector(`#strokeColors > div[data-color="${color}"]`).classList.add('checked');
 
