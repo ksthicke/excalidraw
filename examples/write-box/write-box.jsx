@@ -46,6 +46,7 @@ class WriteBox extends HTMLElement {
         resizer.style.position = 'relative';
         resizer.style.setProperty('left', 'calc(50% - 1cm)');
         resizer.style.cursor = 'ns-resize';
+        resizer.style.setProperty('touch-action', 'none');
         const resizerBarTop = document.createElement('div');
         resizerBarTop.style.height = '1px';
         resizerBarTop.style.backgroundColor = '#CCCCCC';
