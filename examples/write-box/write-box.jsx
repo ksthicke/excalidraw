@@ -42,9 +42,10 @@ class WriteBox extends HTMLElement {
         root.render(<this.ExcalidrawWrapper />);
         const resizer = document.createElement('div');
         resizer.style.height = '0.25cm';
-        resizer.style.width = '2cm';
+        resizer.style.width = '1cm';
         resizer.style.position = 'relative';
         resizer.style.setProperty('left', 'calc(50% - 1cm)');
+        resizer.style.cursor = 'ns-resize';
         const resizerBarTop = document.createElement('div');
         resizerBarTop.style.height = '1px';
         resizerBarTop.style.backgroundColor = '#CCCCCC';
@@ -60,25 +61,25 @@ class WriteBox extends HTMLElement {
         resizer.appendChild(resizerBarTop);
         resizer.appendChild(resizerBarBottom);
         const leftBar = document.createElement('div');
-        leftBar.style.height = '0.5cm';
+        leftBar.style.height = '0.4cm';
         leftBar.style.width = '1px';
         leftBar.style.backgroundColor = '#DDDDDD';
         const rightBar = document.createElement('div');
-        rightBar.style.height = '0.5cm';
+        rightBar.style.height = '0.4cm';
         rightBar.style.width = '1px';
         rightBar.style.backgroundColor = '#DDDDDD';
         rightBar.style.position = 'absolute';
         rightBar.style.bottom = '0px';
         rightBar.style.right = '0px';
         const topBar = document.createElement('div');
-        topBar.style.width = '0.5cm';
+        topBar.style.width = '0.4cm';
         topBar.style.height = '1px';
         topBar.style.backgroundColor = '#DDDDDD';
         const bottomBar = document.createElement('div');
-        bottomBar.style.width = '0.5cm';
+        bottomBar.style.width = '0.4cm';
         bottomBar.style.height = '1px';
         bottomBar.style.backgroundColor = '#DDDDDD';
-        bottomBar.style.setProperty('margin-left', 'calc(100% - 0.5cm)');
+        bottomBar.style.setProperty('margin-left', 'calc(100% - 0.4cm)');
         flexbox.appendChild(leftBar);
         flexbox.appendChild(excalidrawContainer);
         flexbox.appendChild(rightBar);
@@ -90,8 +91,7 @@ class WriteBox extends HTMLElement {
         this.appendChild(resizer);
 
         resizer.addEventListener('mousedown', this.startDrag)
-        const button = document.querySelector('button');
-        button.addEventListener('mousedown', this.resizeBox);
+        resizer.addEventListener('touchstart', this.startTouchDrag)
     }
     attributeChangedCallback(name, oldValue, newValue) {
         if (this.firstChild) { // If element is already rendered (attributeChangedCallback gets called before the element is rendered as well).
@@ -103,7 +103,6 @@ class WriteBox extends HTMLElement {
 
     // Functions for resizing the box.
     startDrag = (event) => {
-        console.log('START DRAG')
         this.startY = event.clientY;
         const rect = this.firstChild.getBoundingClientRect();
         this.originalHeight = rect.bottom - rect.top;
@@ -111,12 +110,28 @@ class WriteBox extends HTMLElement {
         document.addEventListener('mouseup', this.stopDrag);
     }
     resizeBox = (event) => {
-        console.log('RESIZE', this.originalHeight, event.clientY, this.startY)
         this.setAttribute('height', this.originalHeight + event.clientY - this.startY + 'px');
     }
     stopDrag = (event) => {
         document.removeEventListener('mousemove', this.resizeBox);
         document.removeEventListener('mouseup', this.stopDrag);
+    }
+    startTouchDrag = (event) => {
+        const {touches} = event;
+        if (touches && touches.length == 1) {
+            this.startY = touches[0].clientY;
+            const rect = this.firstChild.getBoundingClientRect();
+            this.originalHeight = rect.bottom - rect.top;
+            document.addEventListener('touchmove', this.resizeBoxTouch);
+            document.addEventListener('touchend', this.stopTouchDrag);
+        }
+    }
+    resizeBoxTouch = (event) => {
+        this.setAttribute('height', this.originalHeight + event.touches[0].clientY - this.startY + 'px');
+    }
+    stopTouchDrag = (event) => {
+        document.removeEventListener('touchmove', this.resizeBoxTouch);
+        document.removeEventListener('touchend', this.stopTouchDrag);
     }
 
     /* This wrapper allows us to use the excalidrawAPI.  The api can only be accessed
