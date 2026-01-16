@@ -6,6 +6,6 @@
 
 # How to build write-box
 
-1. Run `npm run build`.
+1. Run `npm run build` from the examples/write-box folder.
 2. Copy the `dist/write-box` folder into `src/components` in ChewyMarkdown.
 3. When you run ChewyMarkdown, use ctrl+shift+L.  Do NOT use `npm run dev`.
