@@ -110,7 +110,7 @@ function dispatchSave(event) {
 function saveToFile(event) {
     // Update with the new data.
     const obj = event.detail;
-    window.writeBoxes[obj.idx] = obj.sceneData;
+    window.writeBoxes[obj.idx] = { height: obj.height, sceneData: obj.sceneData };
     window.writeBoxesUpdated[obj.idx] = true;
 
     // If all write-boxes have returned their data, then save to file.
@@ -159,13 +159,13 @@ function dispatchLoad(event) {
     if (Object.hasOwn(obj, 'writeboxes')) {
         // Load into each write-box.
         const writeBoxes = document.querySelectorAll('write-box');
-        const savedScenes = obj.writeboxes;
-        if (savedScenes.length > writeBoxes.length) {
+        const savedBoxes = obj.writeboxes;
+        if (savedBoxes.length > writeBoxes.length) {
             alert('Load failed. There are more saved boxes in this file than there are boxes in these notes. You probably tried to open the notes for a different chapter.')
         }
         else {
-            for (let i = 0; i < savedScenes.length; i++) {
-                writeBoxes[i].dispatchEvent(new CustomEvent('loadBox', { detail: savedScenes[i] }));
+            for (let i = 0; i < savedBoxes.length; i++) {
+                writeBoxes[i].dispatchEvent(new CustomEvent('loadBox', { detail: savedBoxes[i] }));
             }
         }
     }
