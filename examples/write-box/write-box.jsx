@@ -5,7 +5,7 @@ import "@excalidraw/excalidraw/index.css";
 
 // Define class.
 class WriteBox extends HTMLElement {
-    static observedAttributes = ['title', 'prefix'];
+    static observedAttributes = ['height'];
     constructor() {
         super();
         /* Use this when I convert to using the shadowDOM.
@@ -22,15 +22,64 @@ class WriteBox extends HTMLElement {
         const shadowRoot = this.shadowRoot;
         const root = createRoot(shadowRoot.querySelector('div'));
         root.render(<div style={{ height: "600px" }}><Excalidraw /></div>);*/
-        const root = createRoot(this);
         let height = this.getAttribute('height');
         if (!height) {
-            height = '600px';
+            height = '3in';
         }
-        root.render(<div id="container" style={{ height: height }}><this.ExcalidrawWrapper /></div>);
+        const container = document.createElement('div');
+        container.style.height = height;
+        const root = createRoot(container);
+        root.render(<this.ExcalidrawWrapper />);
+        const resizer = document.createElement('div');
+        resizer.style.height = '0.25cm';
+        resizer.style.width = '2cm';
+        resizer.style.position = 'relative';
+        resizer.style.setProperty('left', 'calc(50% - 1cm)');
+        const resizerBarTop = document.createElement('div');
+        resizerBarTop.style.height = '1px';
+        resizerBarTop.style.backgroundColor = '#CCCCCC';
+        resizerBarTop.style.width = '100%';
+        resizerBarTop.style.top = '2px';
+        resizerBarTop.style.position = 'absolute';
+        const resizerBarBottom = document.createElement('div');
+        resizerBarBottom.style.height = '1px';
+        resizerBarBottom.style.backgroundColor = '#CCCCCC';
+        resizerBarBottom.style.width = '100%';
+        resizerBarBottom.style.position = 'absolute';
+        resizerBarBottom.style.bottom = '2px';
+        resizer.appendChild(resizerBarTop);
+        resizer.appendChild(resizerBarBottom);
+        this.appendChild(container);
+        this.appendChild(resizer);
+
+        resizer.addEventListener('mousedown', this.startDrag)
+        const button = document.querySelector('button');
+        button.addEventListener('mousedown', this.resizeBox);
     }
     attributeChangedCallback(name, oldValue, newValue) {
-        
+        if (this.firstChild) { // If element is already rendered (attributeChangedCallback gets called before the element is rendered as well).
+            if (name == 'height') {
+                this.firstChild.style.height = newValue;
+            }
+        }
+    }
+
+    // Functions for resizing the box.
+    startDrag = (event) => {
+        console.log('START DRAG')
+        this.startY = event.clientY;
+        const rect = this.firstChild.getBoundingClientRect();
+        this.originalHeight = rect.bottom - rect.top;
+        document.addEventListener('mousemove', this.resizeBox);
+        document.addEventListener('mouseup', this.stopDrag);
+    }
+    resizeBox = (event) => {
+        console.log('RESIZE', this.originalHeight, event.clientY, this.startY)
+        this.setAttribute('height', this.originalHeight + event.clientY - this.startY + 'px');
+    }
+    stopDrag = (event) => {
+        document.removeEventListener('mousemove', this.resizeBox);
+        document.removeEventListener('mouseup', this.stopDrag);
     }
 
     /* This wrapper allows us to use the excalidrawAPI.  The api can only be accessed
