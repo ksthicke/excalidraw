@@ -116,6 +116,12 @@ class WriteBox extends HTMLElement {
     stopDrag = (event) => {
         document.removeEventListener('mousemove', this.resizeBox);
         document.removeEventListener('mouseup', this.stopDrag);
+
+        // Update the new locations of all write-boxes.
+        const writeboxes = document.querySelectorAll('write-box');
+        for (let box of writeboxes) {
+            box.dispatchEvent(new CustomEvent('refreshCoords'));
+        }
     }
     startTouchDrag = (event) => {
         const {touches} = event;
@@ -133,6 +139,12 @@ class WriteBox extends HTMLElement {
     stopTouchDrag = (event) => {
         document.removeEventListener('touchmove', this.resizeBoxTouch);
         document.removeEventListener('touchend', this.stopTouchDrag);
+        
+        // Update the new locations of all write-boxes.
+        const writeboxes = document.querySelectorAll('write-box');
+        for (let box of writeboxes) {
+            box.dispatchEvent(new CustomEvent('refreshCoords'));
+        }
     }
 
     /* This wrapper allows us to use the excalidrawAPI.  The api can only be accessed
@@ -243,6 +255,14 @@ class WriteBox extends HTMLElement {
             });
         };
 
+        /* This function refreshes the coordinates of the write-box inside of excalidraw.
+         * This is normally called when the page scrolls. But we need it for when we change 
+         * the size of a different write-box because then all the write-boxes below get 
+         * shifted, but excalidraw doesn't know about that unless we call this function. */
+        const refreshCoords = () => {
+            excalidrawAPI.refresh();
+        }
+
         // Set up the excalidrawAPI.
         const [excalidrawAPI, setExcalidrawAPI] = useState(null);
 
@@ -279,6 +299,13 @@ class WriteBox extends HTMLElement {
             this.addEventListener("changeBackgroundColor", changeBackgroundColor);
             return () => {
                 this.removeEventListener("changeBackgroundColor", changeBackgroundColor);
+            }
+        }, [excalidrawAPI]);
+
+        React.useEffect(() => {
+            this.addEventListener("refreshCoords", refreshCoords);
+            return () => {
+                this.removeEventListener("refreshCoords", refreshCoords);
             }
         }, [excalidrawAPI]);
 
