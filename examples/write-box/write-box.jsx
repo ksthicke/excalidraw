@@ -111,7 +111,7 @@ class WriteBox extends HTMLElement {
         document.addEventListener('mouseup', this.stopDrag);
     }
     resizeBox = (event) => {
-        this.setAttribute('height', this.originalHeight + event.clientY - this.startY + 'px');
+        this.setAttribute('height', Math.max(0, this.originalHeight + event.clientY - this.startY) + 'px');
     }
     stopDrag = (event) => {
         document.removeEventListener('mousemove', this.resizeBox);
@@ -134,7 +134,7 @@ class WriteBox extends HTMLElement {
         }
     }
     resizeBoxTouch = (event) => {
-        this.setAttribute('height', this.originalHeight + event.touches[0].clientY - this.startY + 'px');
+        this.setAttribute('height', Math.max(0, this.originalHeight + event.touches[0].clientY - this.startY) + 'px');
     }
     stopTouchDrag = (event) => {
         document.removeEventListener('touchmove', this.resizeBoxTouch);
