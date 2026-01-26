@@ -287,8 +287,38 @@ const html = `
             top: 5px;
             transform: translate(-50%, 0%);
         }
+        div.toolBoxLeft {
+            flex-direction: row;
+            left: 0%;
+            top: 50%;
+            transform: translate(0%, -50%);
+        }
+        div.toolBoxLeft > #tools {
+            flex-direction: column;
+        }
+        div.toolBoxLeft #colorsContainer {
+            flex-direction: column;
+        }
+        div.toolBoxLeft #strokeColors {
+            flex-direction: column;
+        }
+        div.toolBoxLeft #backgroundColors {
+            flex-direction: column;
+        }
+        div.toolBoxLeft #colorDivider {
+            width: unset;
+            height: 1px;
+        }
+        @media print {
+            #toolbar {
+                display: none;
+            }
+            #toolbar * {
+                display: none;
+            }
+        }
     </style>
-    <div id="toolbar" class="toolBoxTop">
+    <div id="toolbar" class="toolBoxLeft">
         <div id="tools">
             ${icon.iconHand}
             ${icon.iconHandPoint}
