@@ -2,10 +2,13 @@ import * as icon from './fontawesome-icons.js';
 
 // Define class.
 class ToolBar extends HTMLElement {
+    static observedAttributes = ['position'];
     constructor() {
         super();
+        this.horzPos = 'left';
+        this.vertPos = 'center';
         const shadowRoot = this.attachShadow({ mode: 'open' });
-        const template = parsedHtml.getElementById('toolbar-template');
+        const template = getParsedHtml(this.getPositionClass()).getElementById('toolbar-template');
         const templateContent = template.content;
         shadowRoot.appendChild(templateContent.cloneNode(true));
     }
@@ -37,7 +40,7 @@ class ToolBar extends HTMLElement {
             // Check if anything has been updated since last save.
 
             // If changed since last save, then warn before leaving page.
-            //e.preventDefault(); // asks user if they are sure they want to leave
+            e.preventDefault(); // asks user if they are sure they want to leave
         });
 
         // Set up stroke colors.
@@ -73,6 +76,84 @@ class ToolBar extends HTMLElement {
             newColorOuter.addEventListener('click', dispatchChangeBackgroundColor);
             backgroundColorsContainer.appendChild(newColorOuter);
         }
+    }
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (name == 'position') {
+            // Determine what position it is.
+            const left = /left/.test(newValue);
+            const right = /right/.test(newValue);
+            const top = /top/.test(newValue);
+            const bottom = /bottom/.test(newValue);
+            const center = /center/.test(newValue);
+            const middle = /middle/.test(newValue);
+            const numWords = top + bottom + left + right + center + middle;
+            let horzPos = 'left';
+            let vertPos = 'center';
+            if (left && right) {
+                console.warn(`Toolbar's position cannot contain both "left" and "right". Reverting to default.`);
+            }
+            else if (top && bottom) {
+                console.warn(`Toolbar's position cannot contain both "top" and "bottom". Reverting to default.`);
+            }
+            else if (numWords > 2) {
+                console.warn(`Toolbar's position cannot contain three or more words. Reverting to default.`);
+            }
+            else if (numWords == 1) {
+                if (left) {
+                    horzPos = 'left';
+                    vertPos = 'center';
+                }
+                if (right) {
+                    horzPos = 'right';
+                    vertPos = 'center';
+                }
+                if (top) {
+                    horzPos = 'center';
+                    vertPos = 'top';
+                }
+                if (bottom) {
+                    horzPos = 'center';
+                    vertPos = 'bottom';
+                }
+                if (center || middle) {
+                    horzPos = 'center';
+                    vertPos = 'center';
+                }
+            }
+            else if (numWords == 2) {
+                horzPos = 'center';
+                vertPos = 'center';
+                if (left) {
+                    horzPos = 'left';
+                }
+                if (right) {
+                    horzPos = 'right';
+                }
+                if (top) {
+                    vertPos = 'top';
+                }
+                if (bottom) {
+                    vertPos = 'bottom';
+                }
+            }
+            this.horzPos = horzPos;
+            this.vertPos = vertPos;
+            if (this.shadowRoot.querySelector('#toolbar')) { // If element is already rendered (attributeChangedCallback gets called before the element is rendered as well).
+                this.updateLocation();
+            }
+        }
+    }
+    getPositionClass() {
+        const str = this.vertPos + this.horzPos[0].toUpperCase() + this.horzPos.slice(1);
+        return str;
+    }
+    updateLocation() {
+        const toolbar = this.shadowRoot.querySelector('#toolbar');
+        const classes = ['topLeft', 'topCenter', 'topRight', 'centerLeft', 'centerCenter', 'centerRight', 'bottomLeft', 'bottomCenter', 'bottomRight'];
+        for (let c of classes) {
+            toolbar.classList.remove(c);
+        }
+        toolbar.classList.add(this.getPositionClass());
     }
 }
 
@@ -207,142 +288,178 @@ function dispatchChangeBackgroundColor(event) {
 }
 
 // Helper variables.
-const html = `
-<template id="toolbar-template">
-    <style>
-        :host {
-            --icon-size: 1.2em;
-            --margin-around-icons: 0.2em;
-        }
-        div#tools {
-            display: flex;
-        }
-        div#colorsContainer {
-            display: flex;
-        }
-        div#strokeColors {
-            display: flex;
-        }
-        div#backgroundColors {
-            display: flex;
-        }
-        div#tools > svg {
-            width: var(--icon-size);
-            height: var(--icon-size);
-            vertical-align: -0.125em;
-            padding: 0.4em;
-            margin: var(--margin-around-icons) calc(var(--margin-around-icons)*0.5);
-            border-radius: 0.2em;
-        }
-        div#tools > svg:hover {
-            background-color: #EAEAEA;
-            cursor: pointer;
-        }
-        div#tools > svg.checked {
-            background-color: #DDDDDD;
-        }
-        div#strokeColors > .checked {
-            background-color: #DDDDDD;
-        }
-        div#backgroundColors > .checked {
-            background-color: #DDDDDD;
-        }
-        div#toolbar {
-            background-color: white;
-            border: 1px solid gray;
-            border-radius: 0.2em;
-            padding: 0 calc(var(--margin-around-icons)*0.5);
-            display: flex;
-            position: fixed;
-            z-index: 2000;
-        }
-        div.color {
-            width: var(--icon-size);
-            height: var(--icon-size);
-            border-radius: 0.2em;
-        }
-        div.colorOuter {
-            padding: 0.4em;
-            margin: var(--margin-around-icons) calc(var(--margin-around-icons)*0.5);
-            border-radius: 0.2em;
-        }
-        div.colorOuter:hover {
-            background-color: #EAEAEA;
-            cursor: pointer;
-        }
-        #colorDivider {
-            background-color: #999999;
-            width: 1px;
-            margin: 0.4em 0.4em;
-        }
-        div.toolBoxCenter {
-            flex-direction: column;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-        }
-        div.toolBoxTop {
-            flex-direction: column;
-            left: 75%;
-            top: 5px;
-            transform: translate(-50%, 0%);
-        }
-        div.toolBoxLeft {
-            flex-direction: row;
-            left: 0%;
-            top: 50%;
-            transform: translate(0%, -50%);
-        }
-        div.toolBoxLeft > #tools {
-            flex-direction: column;
-        }
-        div.toolBoxLeft #colorsContainer {
-            flex-direction: column;
-        }
-        div.toolBoxLeft #strokeColors {
-            flex-direction: column;
-        }
-        div.toolBoxLeft #backgroundColors {
-            flex-direction: column;
-        }
-        div.toolBoxLeft #colorDivider {
-            width: unset;
-            height: 1px;
-        }
-        @media print {
-            #toolbar {
-                display: none;
+function getParsedHtml(className) {
+    const html = `
+    <template id="toolbar-template">
+        <style>
+            div#toolbar {
+                --icon-size: min(1.2em, calc(100vh/25));
+                --margin-around-icons: calc(var(--icon-size)/10);
             }
-            #toolbar * {
-                display: none;
+            :is(div#toolbar.topCenter, div#toolbar.bottomCenter) {
+                --icon-size: min(1.2em, calc(100vw/25));
+                --margin-around-icons: calc(var(--icon-size)/10);
             }
-        }
-    </style>
-    <div id="toolbar" class="toolBoxLeft">
-        <div id="tools">
-            ${icon.iconHand}
-            ${icon.iconHandPoint}
-            ${icon.iconDottedRectangle}
-            ${icon.iconSquare}
-            ${icon.iconCircle}
-            ${icon.iconRightArrow}
-            ${icon.iconLine}
-            ${icon.iconPencil}
-            ${icon.iconMarker}
-            ${icon.iconLetterA}
-            ${icon.iconEraser}
-            ${icon.iconCrossHair}
+            :is(div#toolbar.topLeft, div#toolbar.topRight, div#toolbar.bottomLeft, div#toolbar.bottomRight) {
+                --icon-size: min(1.2em, calc(100vw/50));
+                --margin-around-icons: calc(var(--icon-size)/10);
+            }
+            div#tools > svg {
+                width: var(--icon-size);
+                height: var(--icon-size);
+                vertical-align: -0.125em;
+                padding: calc(var(--icon-size)/4);
+                margin: var(--margin-around-icons);
+                border-radius: calc(var(--icon-size)/6);
+            }
+            div#tools > svg:hover {
+                background-color: #EAEAEA;
+                cursor: pointer;
+            }
+            div#tools > svg.checked {
+                background-color: #DDDDDD;
+            }
+            div#strokeColors > .checked {
+                background-color: #DDDDDD;
+            }
+            div#backgroundColors > .checked {
+                background-color: #DDDDDD;
+            }
+            div#toolbar {
+                background-color: white;
+                border: 1px solid gray;
+                border-radius: calc(var(--icon-size)/6);
+                padding: 0 var(--margin-around-icons);
+                display: flex;
+                position: fixed;
+                z-index: 2000;
+            }
+            div.color {
+                width: var(--icon-size);
+                height: var(--icon-size);
+                border-radius: calc(var(--icon-size)/6);
+            }
+            div.colorOuter {
+                padding: calc(var(--icon-size)/3);
+                margin: var(--margin-around-icons);
+                border-radius: calc(var(--icon-size)/6);
+            }
+            div.colorOuter:hover {
+                background-color: #EAEAEA;
+                cursor: pointer;
+            }
+            div#toolbar.topLeft {
+                --flex-direction: row;
+                flex-direction: column;
+                left: 25%;
+                top: 0%;
+                transform: translate(-50%, 0%);
+            }
+            div#toolbar.topCenter {
+                --flex-direction: row;
+                flex-direction: column;
+                left: 50%;
+                top: 0%;
+                transform: translate(-50%, 0%);
+            }
+            div#toolbar.topRight {
+                --flex-direction: row;
+                flex-direction: column;
+                left: 75%;
+                top: 0%;
+                transform: translate(-50%, 0%);
+            }
+            div#toolbar.centerLeft {
+                --flex-direction: column;
+                flex-direction: row;
+                left: 0%;
+                top: 50%;
+                transform: translate(0%, -50%);
+            }
+            div#toolbar.centerCenter {
+                --flex-direction: column;
+                flex-direction: row;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+            }
+            div#toolbar.centerRight {
+                --flex-direction: column;
+                flex-direction: row;
+                right: 0%;
+                top: 50%;
+                transform: translate(0%, -50%);
+            }
+            div#toolbar.bottomLeft {
+                --flex-direction: row;
+                flex-direction: column;
+                left: 25%;
+                bottom: 0%;
+                transform: translate(-50%, 0%);
+            }
+            div#toolbar.bottomCenter {
+                --flex-direction: row;
+                flex-direction: column;
+                left: 50%;
+                bottom: 0%;
+                transform: translate(-50%, 0%);
+            }
+            div#toolbar.bottomRight {
+                --flex-direction: row;
+                flex-direction: column;
+                left: 75%;
+                bottom: 0%;
+                transform: translate(-50%, 0%);
+            }
+            div#toolbar :is(#tools, #colorsContainer, #strokeColors, #backgroundColors) {
+                display: flex;
+                flex-direction: var(--flex-direction);
+            }
+            #colorDivider {
+                background-color: #999999;
+                width: 1px;
+                margin: calc(var(--icon-size)/3);
+            }
+            :is(div#toolbar.centerLeft, div#toolbar.centerCenter, div#centerRight) #colorDivider {
+                width: unset;
+                height: 1px;
+            }
+            @media print {
+                #toolbar {
+                    display: none;
+                }
+                #toolbar * {
+                    display: none;
+                }
+            }
+        </style>
+        <div id="toolbar" class="${className}">
+            <div id="tools">
+                ${icon.iconHand}
+                ${icon.iconHandPoint}
+                ${icon.iconDottedRectangle}
+                ${icon.iconSquare}
+                ${icon.iconCircle}
+                ${icon.iconRightArrow}
+                ${icon.iconLine}
+                ${icon.iconPencil}
+                ${icon.iconMarker}
+                ${icon.iconLetterA}
+                ${icon.iconEraser}
+                ${icon.iconCrossHair}
+            </div>
+            <div id="colorsContainer">
+                <div id="strokeColors"></div>
+                <div id="colorDivider"></div>
+                <div id="backgroundColors"></div>
+            </div>
         </div>
-        <div id="colorsContainer">
-            <div id="strokeColors"></div>
-            <div id="colorDivider"></div>
-            <div id="backgroundColors"></div>
-        </div>
-    </div>
-</template>`;
+    </template>`;
 
-const parser = new DOMParser();
-const parsedHtml = parser.parseFromString(html, "text/html");
+    const parser = new DOMParser();
+    const parsedHtml = parser.parseFromString(html, "text/html");
+    return parsedHtml;
+}
 
 // Helper function.
 function setTitle(el) {
