@@ -16,11 +16,23 @@ class ToolBar extends HTMLElement {
         const shadowRoot = this.shadowRoot;
 
         // Set up tools.
-        const actions = ['hand', 'selection', 'lasso', 'rectangle', 'ellipse', 'arrow', 'line', 'freedraw', 'highlighter', 'text', 'eraser', 'laser'];
+        const actions = ['hand', 'selection', 'lasso', 'rectangle', 'ellipse', 'arrow', 'line', 'freedraw', 'highlighter', 'text', 'eraser', 'laser', 'increaseFontSize', 'resetFontSize', 'decreaseFontSize'];
         const tools = shadowRoot.querySelectorAll('#tools > svg');
         for (let i = 0; i < tools.length; i++) {
             tools[i].id = actions[i];
-            tools[i].addEventListener('click', dispatchSetTool);
+            switch (actions[i]) {
+                case 'increaseFontSize':
+                    tools[i].addEventListener('click', increaseFontSize);
+                    break;
+                case 'decreaseFontSize':
+                    tools[i].addEventListener('click', decreaseFontSize);
+                    break;
+                case 'resetFontSize':
+                    tools[i].addEventListener('click', resetFontSize);
+                    break;
+                default:
+                    tools[i].addEventListener('click', dispatchSetTool);
+            }
         }
 
         // Set up save and load.
@@ -155,6 +167,22 @@ class ToolBar extends HTMLElement {
         }
         toolbar.classList.add(this.getPositionClass());
     }
+}
+
+function increaseFontSize(event) {
+    const htmlEl = document.documentElement;
+    const currentFontSize = parseFloat(window.getComputedStyle(htmlEl).getPropertyValue('font-size'));
+    htmlEl.style.setProperty('font-size', currentFontSize*1.1 + 'px');
+}
+
+function decreaseFontSize(event) {
+    const htmlEl = document.documentElement;
+    const currentFontSize = parseFloat(window.getComputedStyle(htmlEl).getPropertyValue('font-size'));
+    htmlEl.style.setProperty('font-size', currentFontSize/1.1 + 'px');
+}
+
+function resetFontSize(event) {
+    document.documentElement.style.setProperty('font-size', '1em');
 }
 
 function dispatchSetTool(event) {
@@ -293,16 +321,20 @@ function getParsedHtml(className) {
     <template id="toolbar-template">
         <style>
             div#toolbar {
-                --icon-size: min(1.2em, calc(100vh/25));
+                font-size: 12pt;
+                --icon-size: min(1.2em, calc(100vh/30));
                 --margin-around-icons: calc(var(--icon-size)/10);
+                --one-pixel: calc(var(--icon-size)/20)
             }
             :is(div#toolbar.topCenter, div#toolbar.bottomCenter) {
-                --icon-size: min(1.2em, calc(100vw/25));
+                --icon-size: min(1.2em, calc(100vw/30));
                 --margin-around-icons: calc(var(--icon-size)/10);
+                --one-pixel: calc(var(--icon-size)/20)
             }
             :is(div#toolbar.topLeft, div#toolbar.topRight, div#toolbar.bottomLeft, div#toolbar.bottomRight) {
-                --icon-size: min(1.2em, calc(100vw/50));
+                --icon-size: min(1.2em, calc(100vw/60));
                 --margin-around-icons: calc(var(--icon-size)/10);
+                --one-pixel: calc(var(--icon-size)/20)
             }
             div#tools > svg {
                 width: var(--icon-size);
@@ -327,7 +359,7 @@ function getParsedHtml(className) {
             }
             div#toolbar {
                 background-color: white;
-                border: 1px solid gray;
+                border: var(--one-pixel) solid gray;
                 border-radius: calc(var(--icon-size)/6);
                 padding: 0 var(--margin-around-icons);
                 display: flex;
@@ -417,12 +449,12 @@ function getParsedHtml(className) {
             }
             #colorDivider {
                 background-color: #999999;
-                width: 1px;
+                width: var(--one-pixel);
                 margin: calc(var(--icon-size)/3);
             }
             :is(div#toolbar.centerLeft, div#toolbar.centerCenter, div#centerRight) #colorDivider {
                 width: unset;
-                height: 1px;
+                height: var(--one-pixel);
             }
             @media print {
                 #toolbar {
@@ -447,6 +479,9 @@ function getParsedHtml(className) {
                 ${icon.iconLetterA}
                 ${icon.iconEraser}
                 ${icon.iconCrossHair}
+                ${icon.iconPlus}
+                ${icon.iconZero}
+                ${icon.iconMinus}
             </div>
             <div id="colorsContainer">
                 <div id="strokeColors"></div>
