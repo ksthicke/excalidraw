@@ -1563,6 +1563,10 @@ class App extends React.Component<AppProps, AppState> {
         onKeyDown={
           this.props.handleKeyboardGlobally ? undefined : this.onKeyDown
         }
+        onPointerDown={(event) => {
+          event.preventDefault();
+          this.excalidrawContainerRef.current?.focus({ preventScroll: true });
+        }}
         onPointerEnter={this.toggleOverscrollBehavior}
         onPointerLeave={this.toggleOverscrollBehavior}
       >
