@@ -73,7 +73,7 @@ class ToolBar extends HTMLElement {
             newColorOuter.classList.add('colorOuter');
             newColorOuter.setAttribute('data-color', backgroundColors[i]);
             newColorOuter.appendChild(newColorInner);
-            newColorOuter.addEventListener('click', dispatchChangeBackgroundColor);
+            newColorOuter.addEventListener('click', dispatchChangeElementBackgroundColor);
             backgroundColorsContainer.appendChild(newColorOuter);
         }
     }
@@ -271,7 +271,7 @@ function dispatchChangeStrokeColor(event) {
     }
 }
 
-function dispatchChangeBackgroundColor(event) {
+function dispatchChangeElementBackgroundColor(event) {
     const shadowRoot = document.querySelector('tool-bar').shadowRoot;
     const color =  this.getAttribute("data-color");
 
@@ -283,7 +283,7 @@ function dispatchChangeBackgroundColor(event) {
     // Set the stroke color in each write-box.
     const writeBoxes = document.querySelectorAll('write-box');
     for (let box of writeBoxes) {
-        box.dispatchEvent(new CustomEvent('changeBackgroundColor', { detail: color }));
+        box.dispatchEvent(new CustomEvent('changeElementBackgroundColor', { detail: color }));
     }
 }
 

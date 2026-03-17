@@ -28,13 +28,6 @@ class WriteBox extends HTMLElement {
         }
         const container = document.createElement('div');
         container.style.height = height;
-        const flexboxContainer = document.createElement('div');
-        flexboxContainer.style.position = 'relative';
-        flexboxContainer.style.setProperty('height', 'calc(100% - 2px)');
-        const flexbox = document.createElement('div');
-        flexbox.style.setProperty('height', '100%');
-        flexbox.style.width = '100%';
-        flexbox.style.display = 'flex';
         const excalidrawContainer = document.createElement('div');
         excalidrawContainer.style.setProperty('height', '100%');
         excalidrawContainer.style.setProperty('width', 'calc(100% - 2px)');
@@ -61,33 +54,7 @@ class WriteBox extends HTMLElement {
         resizerBarBottom.style.bottom = '3px';
         resizer.appendChild(resizerBarTop);
         resizer.appendChild(resizerBarBottom);
-        const leftBar = document.createElement('div');
-        leftBar.style.height = '0.3cm';
-        leftBar.style.width = '1px';
-        leftBar.style.backgroundColor = '#DDDDDD';
-        const rightBar = document.createElement('div');
-        rightBar.style.height = '0.3cm';
-        rightBar.style.width = '1px';
-        rightBar.style.backgroundColor = '#DDDDDD';
-        rightBar.style.position = 'absolute';
-        rightBar.style.bottom = '0px';
-        rightBar.style.right = '0px';
-        const topBar = document.createElement('div');
-        topBar.style.width = '0.3cm';
-        topBar.style.height = '1px';
-        topBar.style.backgroundColor = '#DDDDDD';
-        const bottomBar = document.createElement('div');
-        bottomBar.style.width = '0.3cm';
-        bottomBar.style.height = '1px';
-        bottomBar.style.backgroundColor = '#DDDDDD';
-        bottomBar.style.setProperty('margin-left', 'calc(100% - 0.3cm)');
-        flexbox.appendChild(leftBar);
-        flexbox.appendChild(excalidrawContainer);
-        flexbox.appendChild(rightBar);
-        flexboxContainer.appendChild(flexbox);
-        container.appendChild(topBar);
-        container.appendChild(flexboxContainer);
-        container.appendChild(bottomBar);
+        container.appendChild(excalidrawContainer);
         this.appendChild(container);
         this.appendChild(resizer);
 
@@ -227,7 +194,7 @@ class WriteBox extends HTMLElement {
             });
         };
 
-        const changeBackgroundColor = (event) => {
+        const changeElementBackgroundColor = (event) => {
             const color = event.detail;
 
             // Get the selected elements.
@@ -252,6 +219,16 @@ class WriteBox extends HTMLElement {
                     currentItemBackgroundColor: color,
                 },
                 captureUpdate: 'IMMEDIATELY'
+            });
+        };
+
+        const changeSceneBackgroundColor = (event) => {
+            console.log('changeSceneBackgroundColor', event.detail)
+            const color = event.detail;
+            excalidrawAPI.updateScene({
+                appState: {
+                    viewBackgroundColor: color,
+                },
             });
         };
 
@@ -296,9 +273,16 @@ class WriteBox extends HTMLElement {
         }, [excalidrawAPI]);
 
         React.useEffect(() => {
-            this.addEventListener("changeBackgroundColor", changeBackgroundColor);
+            this.addEventListener("changeElementBackgroundColor", changeElementBackgroundColor);
             return () => {
-                this.removeEventListener("changeBackgroundColor", changeBackgroundColor);
+                this.removeEventListener("changeElementBackgroundColor", changeElementBackgroundColor);
+            }
+        }, [excalidrawAPI]);
+
+        React.useEffect(() => {
+            this.addEventListener("changeSceneBackgroundColor", changeSceneBackgroundColor);
+            return () => {
+                this.removeEventListener("changeSceneBackgroundColor", changeSceneBackgroundColor);
             }
         }, [excalidrawAPI]);
 
@@ -309,7 +293,12 @@ class WriteBox extends HTMLElement {
             }
         }, [excalidrawAPI]);
 
-        return <Excalidraw excalidrawAPI={(api) => setExcalidrawAPI(api)} />
+        return <Excalidraw 
+                    excalidrawAPI={(api) => setExcalidrawAPI(api)} 
+                    initialData={{
+                        appState: { viewBackgroundColor: '#F9F9F9' },
+                    }}
+                />
     }
 }
 
