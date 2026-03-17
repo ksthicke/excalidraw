@@ -56,7 +56,7 @@ class ToolBar extends HTMLElement {
         });
 
         // Set up stroke colors.
-        const strokeColors = ['#000000', '#cc0000', '#00cc00', '#0077ff', '#ff8800', '#ffff00'];
+        const strokeColors = ['#000000', '#cc0000', '#00cc00', '#0077ff', '#ff8800', '#ffff00', '#999999'];
         const strokeColorsContainer = shadowRoot.querySelector('#strokeColors');
         for (let i = 0; i < strokeColors.length; i++) {
             const newColorInner = document.createElement('div');

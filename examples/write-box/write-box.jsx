@@ -128,7 +128,7 @@ class WriteBox extends HTMLElement {
                     break;
                 case 'highlighter':
                     strokeWidth = 6;
-                    opacity = 40;
+                    opacity = 30;
                     tool = 'freedraw';
                     break;
                 default:
@@ -296,7 +296,7 @@ class WriteBox extends HTMLElement {
         return <Excalidraw 
                     excalidrawAPI={(api) => setExcalidrawAPI(api)} 
                     initialData={{
-                        appState: { viewBackgroundColor: '#F9F9F9' },
+                        appState: { viewBackgroundColor: '#FAFAFA' },
                     }}
                 />
     }
