@@ -1482,7 +1482,7 @@ class App extends React.Component<AppProps, AppState> {
               : POINTER_EVENTS.enabled,
           }}
           onPointerDown={(event) => this.handleCanvasPointerDown(event)}
-          onWheel={(event) => this.handleWheel(event)}
+          //onWheel={(event) => this.handleWheel(event)}
           onContextMenu={this.handleCanvasContextMenu}
           onDoubleClick={() => {
             this.setState({
@@ -2630,12 +2630,12 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     this.onRemoveEventListenersEmitter.once(
-      addEventListener(
+      /*addEventListener(
         this.excalidrawContainerRef.current,
         EVENT.WHEEL,
         this.handleWheel,
         { passive: false },
-      ),
+      ),*/
       addEventListener(window, EVENT.MESSAGE, this.onWindowMessage, false),
       addEventListener(document, EVENT.POINTER_UP, this.removePointer, {
         passive: false,
@@ -2712,12 +2712,12 @@ class App extends React.Component<AppProps, AppState> {
       addEventListener(window, EVENT.RESIZE, this.onResize, false),
       addEventListener(window, EVENT.UNLOAD, this.onUnload, false),
       addEventListener(window, EVENT.BLUR, this.onBlur, false),
-      addEventListener(
+      /*addEventListener(
         this.excalidrawContainerRef.current,
         EVENT.WHEEL,
         this.handleWheel,
         { passive: false },
-      ),
+      ),*/
       addEventListener(
         this.excalidrawContainerRef.current,
         EVENT.DRAG_OVER,
