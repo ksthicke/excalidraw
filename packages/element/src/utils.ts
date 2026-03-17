@@ -448,14 +448,14 @@ export const isPathALoop = (
   /** supply if you want the loop detection to account for current zoom */
   zoomValue: Zoom["value"] = 1 as NormalizedZoomValue,
 ): boolean => {
-  if (points.length >= 3) {
+  /*if (points.length >= 3) {
     const [first, last] = [points[0], points[points.length - 1]];
     const distance = pointDistance(first, last);
 
     // Adjusting LINE_CONFIRM_THRESHOLD to current zoom so that when zoomed in
     // really close we make the threshold smaller, and vice versa.
     return distance <= LINE_CONFIRM_THRESHOLD / zoomValue;
-  }
+  }*/
   return false;
 };
 
