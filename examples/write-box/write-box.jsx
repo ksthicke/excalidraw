@@ -151,7 +151,7 @@ class WriteBox extends HTMLElement {
                 "gridSize": appState.gridSize,
                 "gridStep": appState.gridStep,
                 "gridModeEnabled": appState.gridModeEnabled,
-                "viewBackgroundColor": appState.viewBackgroundColor,
+                //"viewBackgroundColor": appState.viewBackgroundColor,
             }
             const elements = excalidrawAPI.getSceneElements();
             const sceneData = {"appState": appStateLessInfo, "elements": elements};
