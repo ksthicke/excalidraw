@@ -1496,9 +1496,10 @@ class App extends React.Component<AppProps, AppState> {
     });
   };
 
-  private toggleOverscrollBehavior(event: React.PointerEvent) {
+  private toggleOverscrollBehavior = (event: React.PointerEvent) => {
     // when pointer inside editor, disable overscroll behavior to prevent
     // panning to trigger history back/forward on MacOS Chrome
+    this.refresh();
     document.documentElement.style.overscrollBehaviorX =
       event.type === "pointerenter" ? "none" : "auto";
   }
@@ -6914,8 +6915,9 @@ class App extends React.Component<AppProps, AppState> {
   private initialPointerDownState(
     event: React.PointerEvent<HTMLElement>,
   ): PointerDownState {
-    const origin = viewportCoordsToSceneCoords(event, this.state);
-    const selectedElements = this.scene.getSelectedElements(this.state);
+    const trueState = { ...this.state, ...this.getCanvasOffsets() };
+    const origin = viewportCoordsToSceneCoords(event, trueState);
+    const selectedElements = this.scene.getSelectedElements(trueState);
     const [minX, minY, maxX, maxY] = getCommonBounds(selectedElements);
     const isElbowArrowOnly = selectedElements.findIndex(isElbowArrow) === 0;
 
@@ -6933,8 +6935,8 @@ class App extends React.Component<AppProps, AppState> {
       ),
       scrollbars: isOverScrollBars(
         currentScrollBars,
-        event.clientX - this.state.offsetLeft,
-        event.clientY - this.state.offsetTop,
+        event.clientX - trueState.offsetLeft,
+        event.clientY - trueState.offsetTop,
       ),
       // we need to duplicate because we'll be updating this state
       lastCoords: { ...origin },
