@@ -34,8 +34,8 @@ class WriteBox extends HTMLElement {
         const root = createRoot(excalidrawContainer);
         root.render(<this.ExcalidrawWrapper />);
         const resizer = document.createElement('div');
-        resizer.style.height = '0.25cm';
-        resizer.style.width = '0.75cm';
+        resizer.style.height = '0.4cm';
+        resizer.style.width = '0.9cm';
         resizer.style.position = 'relative';
         resizer.style.setProperty('left', 'calc(50% - 1cm)');
         resizer.style.cursor = 'ns-resize';
@@ -44,14 +44,14 @@ class WriteBox extends HTMLElement {
         resizerBarTop.style.height = '1px';
         resizerBarTop.style.backgroundColor = '#CCCCCC';
         resizerBarTop.style.width = '100%';
-        resizerBarTop.style.top = '3px';
+        resizerBarTop.style.top = '0.12cm';
         resizerBarTop.style.position = 'absolute';
         const resizerBarBottom = document.createElement('div');
         resizerBarBottom.style.height = '1px';
         resizerBarBottom.style.backgroundColor = '#CCCCCC';
         resizerBarBottom.style.width = '100%';
         resizerBarBottom.style.position = 'absolute';
-        resizerBarBottom.style.bottom = '3px';
+        resizerBarBottom.style.bottom = '0.12cm';
         resizer.appendChild(resizerBarTop);
         resizer.appendChild(resizerBarBottom);
         container.appendChild(excalidrawContainer);
