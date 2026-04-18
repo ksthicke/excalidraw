@@ -37,7 +37,8 @@ class WriteBox extends HTMLElement {
         resizer.style.height = '0.4cm';
         resizer.style.width = '0.9cm';
         resizer.style.position = 'relative';
-        resizer.style.setProperty('left', 'calc(50% - 1cm)');
+        resizer.style.left = '50%';
+        resizer.style.transform = 'translateX(-50%)';
         resizer.style.cursor = 'ns-resize';
         resizer.style.setProperty('touch-action', 'none');
         const resizerBarTop = document.createElement('div');
